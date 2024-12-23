@@ -18,6 +18,7 @@ const ShopContextProvider = ({children}) =>{
     const [cartItems , setCartItems] = useState({})
     const navigate = useNavigate() 
     const [products , setProducts] = useState([])
+    const [retryCount, setRetryCount] = useState(0);
     const [loading , setLoading]  = useState(false)
 
     const addToCart = async (itemId , size) =>{
@@ -107,6 +108,7 @@ const ShopContextProvider = ({children}) =>{
                 toast.error(response.data.message)
             }
         }catch(e){
+            toast.error(e.message)
             console.log(e.message)
         }finally{
             setLoading(false)
@@ -126,9 +128,21 @@ const ShopContextProvider = ({children}) =>{
         }
     }
 
-    useEffect(() =>{
-        fetchProducts()
-    },[])
+   
+
+    useEffect(() => {
+        if (retryCount < 3) {
+          fetchProducts();
+          if (products.length === 0) {
+            setRetryCount((prev) => prev + 1);
+          }
+        }
+        console.log("retry")
+    }, [retryCount]);
+    
+    useEffect(() => {
+        fetchProducts();
+    }, []);
 
     useEffect(() =>{
         if(!token || localStorage.getItem('token')){
